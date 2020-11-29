@@ -2,6 +2,10 @@
 
 Goal: Open new window with minimal controls and precise pixel representation
 
+## Pyglet
+https://pyglet.readthedocs.io/en/latest/index.html
+Pyglet ist used as a first approach to achieve the goal.
+
 ## Pyglet - Numpy
 At the moment Numpy can not access Image Data.
 https://stackoverflow.com/questions/3165379/how-to-display-a-numpy-array-with-pyglet
