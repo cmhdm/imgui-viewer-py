@@ -10,6 +10,14 @@ import imgui
 from imgui.integrations.glfw import GlfwRenderer
 
 
+## Sample for image zoom and pan:
+# https://github.com/Flix01/imgui/blob/imgui_with_addons/addons/imguivariouscontrols/imguivariouscontrols.cpp
+# There is a function "bool ImageZoomAndPan" at line 1268 which does roughly what you want.
+# However looking at it I think it could be done in a more elegant way regarding readability...
+# If the basics work I'm happily helping to get this implemented.
+
+
+
 # execute once
 # imageio.plugins.freeimage.download()
 
