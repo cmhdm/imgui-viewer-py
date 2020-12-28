@@ -12,8 +12,8 @@ from imgui.integrations.glfw import GlfwRenderer
 # execute once
 # imageio.plugins.freeimage.download()
 
-image = imageio.imread('Assets/Exercise_01_Peppers.png')
-texture_data = test[:,:,:3]
+image = imageio.imread('Assets/DeltaE_8bit.tif') # 16bit does not result in a correct representation
+texture_data = image[:,:,:3]
 width = texture_data.shape[1]
 height = texture_data.shape[0]
 
@@ -41,24 +41,7 @@ def main():
 
         imgui.new_frame()
 
-        if imgui.begin_main_menu_bar():
-            if imgui.begin_menu("File", True):
-
-                clicked_quit, selected_quit = imgui.menu_item(
-                    "Quit", 'Cmd+Q', False, True
-                )
-
-                if clicked_quit:
-                    exit(1)
-
-                imgui.end_menu()
-            imgui.end_main_menu_bar()
-
-        imgui.show_test_window()
-
-        imgui.begin("Custom window", True)
-        imgui.text("Bar")
-        imgui.text_colored("Eggs", 0.2, 1., 0.)
+        imgui.begin("Bild", True)
         imgui.image(texture_id, float(width), float(height))
         imgui.end()
 
@@ -100,7 +83,6 @@ def impl_glfw_init():
         exit(1)
 
     return window
-
 
 if __name__ == "__main__":
     main()
