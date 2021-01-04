@@ -4,7 +4,6 @@
 
 import numpy as np
 import imageio
-import pyautogui # used only for display size -> glfw has class monitor
 
 import glfw
 import OpenGL.GL as gl
@@ -15,48 +14,15 @@ from imgui.integrations.glfw import GlfwRenderer
 # execute once
 # imageio.plugins.freeimage.download()
 
-image = imageio.imread('Assets/Exercise_01_Peppers.png') # 16bit does not result in a correct representation
+image = imageio.imread('Assets/DeltaE_8bit.tif') # 16bit does not result in a correct representation
+
+# Other test-images: Assets/DeltaE_8tif.png  Assets/DeltaE_16.tif  Assets/Exercise_01_Peppers.png
+
 texture_data = image[:,:,:3]
-width_image = texture_data.shape[1]
-height_image = texture_data.shape[0]
-
-# check size of current display DEPENDECY PYAUTOGUI (pip install pyautogui)
-display_size = pyautogui.size()
-width_display = display_size.width
-height_display = display_size.height
-
-# compare image-size to display-size
-if width_display < width_image:
-    width = width_display
-else:
-    width = width_image
-
-if height_display < height_image:
-    height = height_display
-else:
-    height = height_image
+width = texture_data.shape[1]
+height = texture_data.shape[0]
 
 texture_id = None
-
-# calculate zoom-factor
-def zoom_factor(mouse_input):
-    zoom_min = 0.1
-    zoom_max = 100.0
-    zoom_default = 1.0
-
-    zoom = default_zoom
-    
-    if zoom > zoom_max:
-        zoom = zoom_max
-    
-    if zoom < zoom_min:
-        zoom = zoom_min
-
-    return zoom
-
-def check_keyboard(key):
-    #pressed_key = imgui.core.keys_down()
-    print(key)
     
 def main():
     imgui.create_context()
@@ -70,27 +36,26 @@ def main():
     gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
-    gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, width_image, height_image, 0, gl.GL_RGB,
+    gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, width, height, 0, gl.GL_RGB,
         gl.GL_UNSIGNED_BYTE, texture_data)
     gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
 
-    zoom = 100
+    zoom = 100 # default Zoom = 100%
 
     while not glfw.window_should_close(window):
         glfw.poll_events()
         impl.process_inputs()
         imgui.new_frame()
         
+        # Image
+        imgui.begin("image", True, flags=imgui.WINDOW_HORIZONTAL_SCROLLING_BAR)
+        imgui.image(texture_id, float(width*(zoom/100)), float(height*(zoom/100)))
+        imgui.end()
+
         # Slider
         imgui.begin("Zoom", True)
         changed, zoom = imgui.slider_int("slide ints", zoom, min_value=1, max_value=1000, format="%d")
         imgui.text("Changed: %s, Values: %s" % (changed, zoom))
-        imgui.end()
-
-        # Image
-        imgui.begin("image", True)
-        imgui.image(texture_id, float(width_image*(zoom/100)), float(height_image*(zoom/100)))
-        imgui.WINDOW_ALWAYS_HORIZONTAL_SCROLLBAR
         imgui.end()
 
         gl.glClearColor(.25, .25, .25, 1)
@@ -105,7 +70,7 @@ def main():
 
 
 def impl_glfw_init():
-    width, height = width_display, height_display
+    width, height = 1280, 720
     window_name = "ImGui"
 
     if not glfw.init():
