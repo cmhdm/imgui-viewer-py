@@ -1,6 +1,6 @@
 # This is the imgui-sample reduced to the minimum
 
-# install all dependecies for imgui "pip install imgui[glfw, pygame, pyglet, opengl]"
+# install all dependecies for imgui "pip install imgui[glfw, opengl]"
 
 import numpy as np
 import imageio
@@ -49,12 +49,15 @@ def main():
         
         # Image
         imgui.begin("image", True, flags=imgui.WINDOW_HORIZONTAL_SCROLLING_BAR)
-        imgui.image(texture_id, float(width*(zoom/100)), float(height*(zoom/100)))
+        if zoom >= 100:
+            imgui.image(texture_id, width*(float(zoom)/100.0), height*(float(zoom)/100.0))
+        else:
+            imgui.image(texture_id, width*(float(zoom)/100.0), height*(float(zoom)/100.0))
         imgui.end()
 
         # Slider
         imgui.begin("Zoom", True)
-        changed, zoom = imgui.slider_int("slide ints", zoom, min_value=1, max_value=1000, format="%d")
+        changed, zoom = imgui.slider_int("slide ints", zoom, min_value=1, max_value=200, format="%d")
         imgui.text("Changed: %s, Values: %s" % (changed, zoom))
         imgui.end()
 
