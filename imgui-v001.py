@@ -49,10 +49,7 @@ def main():
         
         # Image
         imgui.begin("image", True, flags=imgui.WINDOW_HORIZONTAL_SCROLLING_BAR)
-        if zoom >= 100:
-            imgui.image(texture_id, width*(float(zoom)/100.0), height*(float(zoom)/100.0))
-        else:
-            imgui.image(texture_id, width*(float(zoom)/100.0), height*(float(zoom)/100.0))
+        imgui.image(texture_id, float(width*(zoom/100.0)), float(height*(zoom/100.0)))
         imgui.end()
 
         # Slider
