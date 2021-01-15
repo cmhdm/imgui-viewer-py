@@ -1,9 +1,4 @@
-# This is the imgui-sample reduced to the minimum
-
-# install all dependecies for imgui "pip install imgui[glfw, opengl]"
-
 import numpy as np
-import imageio
 
 import glfw
 import OpenGL.GL as gl
@@ -11,21 +6,22 @@ import OpenGL.GL as gl
 import imgui
 from imgui.integrations.glfw import GlfwRenderer
 
-# execute once
-# imageio.plugins.freeimage.download()
+def test_func(bild):
+    print(bild)
 
-image = imageio.imread('Assets/DeltaE_8bit.tif') # 16bit does not result in a correct representation
-
-# Other test-images: Assets/DeltaE_8tif.png  Assets/DeltaE_16.tif  Assets/Exercise_01_Peppers.png
-print(image)
-texture_data = image[:,:,:3]
-print(texture_data)
-width = texture_data.shape[1]
-height = texture_data.shape[0]
-
-texture_id = None
-  
-def main():
+def display(bild, zoom = 100):
+    '''
+    Display Image via Imgui
+    '''
+    # multiple pictures?
+    # check if float or int: GL_FLOAT, or  GL_UNSIGNED_BYTE
+    texture_data = bild[:,:,:3]
+    width = texture_data.shape[1]
+    height = texture_data.shape[0]
+    texture_id = None
+    main(width, height, texture_data, texture_id, zoom)
+    
+def main(width, height, texture_data, texture_id, zoom):
     imgui.create_context()
     window = impl_glfw_init()
     impl = GlfwRenderer(window)
@@ -38,10 +34,8 @@ def main():
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
     gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, width, height, 0, gl.GL_RGB,
-        gl.GL_UNSIGNED_BYTE, texture_data)
+    gl.GL_FLOAT, texture_data)
     gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
-
-    zoom = 100 # default Zoom = 100%
 
     while not glfw.window_should_close(window):
         glfw.poll_events()
@@ -49,7 +43,7 @@ def main():
         imgui.new_frame()
         
         # Image
-        imgui.begin("image", True, flags=imgui.WINDOW_HORIZONTAL_SCROLLING_BAR)
+        imgui.begin("Image", True, flags=imgui.WINDOW_HORIZONTAL_SCROLLING_BAR)
         imgui.image(texture_id, float(width*(zoom/100.0)), float(height*(zoom/100.0)))
         imgui.end()
 
@@ -99,4 +93,4 @@ def impl_glfw_init():
     return window
 
 if __name__ == "__main__":
-    main()
+        main()

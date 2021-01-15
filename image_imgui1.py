@@ -8,20 +8,22 @@ import OpenGL.GL as gl
 import imgui
 from imgui.integrations.glfw import GlfwRenderer
 
-class Image_Imgui:
+class Image:
     '''
     Create an object Image_Imgui from a numpy Array
     '''
-    def __init__(self, numarray):
+    def __init__(self, na):
         '''
         initializes a new object Image_Imgui
 
         * numarray (Numpy.Array): Image as Numpy Array
         '''
 
-        self.NumArray = numarray
+        self.NumArray = na
 
-    def display_Image(self):
+    def display(self):
+
+        print(self.NumArray)
         '''
         displays the image via Imgui
         '''
