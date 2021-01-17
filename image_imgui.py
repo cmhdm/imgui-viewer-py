@@ -1,3 +1,15 @@
+# Image_Imgui displays a numpy array in an external window
+# Only 8bit RGB-images work. Data can be both float and uint
+# Only one image can be displayed at a time. Python interpreter paused while Window is open
+# Zoom is fixed by Zoom-slider from 1% to 200%
+# TODO: - multiple images displeyed simultaniously.
+#       - mouse zoom and scroll
+#       - 10bit image display
+#       - grayscale Array
+#       - reset scale to 100% "pressing button"
+#       - optimize Zoom 1% - 1000% Log_scale 100% midpoint
+
+# Dependencies numpy, Imgui[glfw], OpenGL use !pip install
 import numpy as np
 
 import glfw
@@ -6,22 +18,25 @@ import OpenGL.GL as gl
 import imgui
 from imgui.integrations.glfw import GlfwRenderer
 
-def test_func(bild):
-    print(bild)
-
+# display functions calls main() and transmits imagedata to Renderer
+# standard zoom is 100 which is a 1:1 display
+# zoom can be changed interactivly and while calling display function
 def display(bild, zoom = 100):
     '''
     Display Image via Imgui
     '''
     # multiple pictures?
-    # check if float or int: GL_FLOAT, or  GL_UNSIGNED_BYTE
+    # float or int: GL_FLOAT, or  GL_UNSIGNED_BYTE
+    dt = bild.dtype
     texture_data = bild[:,:,:3]
     width = texture_data.shape[1]
     height = texture_data.shape[0]
     texture_id = None
-    main(width, height, texture_data, texture_id, zoom)
-    
-def main(width, height, texture_data, texture_id, zoom):
+    # print(dt)
+    main(width, height, texture_data, texture_id, zoom, dt)
+
+# main function that generates the window and image output    
+def main(width, height, texture_data, texture_id, zoom, dt):
     imgui.create_context()
     window = impl_glfw_init()
     impl = GlfwRenderer(window)
@@ -33,9 +48,21 @@ def main(width, height, texture_data, texture_id, zoom):
     gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
-    gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, width, height, 0, gl.GL_RGB,
-    gl.GL_FLOAT, texture_data)
+    
+    if dt=='float32' or dt =='float16' or dt == 'float64':
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, width, height, 0, gl.GL_RGB,
+        gl.GL_FLOAT, texture_data)
+        # print('float32')
+    elif dt=='uint8' or dt=='uint16':
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, width, height, 0, gl.GL_RGB,
+        gl.GL_UNSIGNED_BYTE, texture_data)
+        # print('uint8')
+    else:
+        print("Image-Array must have one of the following datatypes: float32, float16, uint8 or uint16. Not:", dt)
+        raise TypeError
+    
     gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
+
 
     while not glfw.window_should_close(window):
         glfw.poll_events()
