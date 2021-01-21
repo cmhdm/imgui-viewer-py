@@ -48,18 +48,19 @@ def main(width, height, texture_data, texture_id, zoom, dt):
     gl.glTexParameterf(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
-    
-    if dt=='float32' or dt =='float16' or dt == 'float64':
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, width, height, 0, gl.GL_RGB,
-        gl.GL_FLOAT, texture_data)
-        # print('float32')
-    elif dt=='uint8' or dt=='uint16':
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, width, height, 0, gl.GL_RGB,
-        gl.GL_UNSIGNED_BYTE, texture_data)
-        # print('uint8')
+
+    tex_data_converted = None
+    dt_str = str(dt)
+    if 'int' in dt_str:
+        tex_data_converted = np.float32(texture_data) / np.iinfo(dt).max
+    elif dt_str.startswith('float'):
+        tex_data_converted = np.float32(texture_data)
     else:
-        print("Image-Array must have one of the following datatypes: float32, float16, uint8 or uint16. Not:", dt)
+        print("Image array must have a float or integer type. Not:", dt)
         raise TypeError
+
+    gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB32F, width, height, 0, gl.GL_RGB,
+        gl.GL_FLOAT, tex_data_converted)
     
     gl.glGenerateMipmap(gl.GL_TEXTURE_2D)
 
@@ -99,18 +100,28 @@ def impl_glfw_init():
         print("Could not initialize OpenGL context")
         exit(1)
 
-    # OS X supports only forward-compatible core profiles from 3.2
     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
-    glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
-    glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
+    glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 0)
 
-    glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, gl.GL_TRUE)
+    # OS X supports only forward-compatible core profiles from 3.2
+    # # Original setup for mac compatibility. Doesn't allow checking bit
+    # # depth on Linux at least thus commented out
+    # glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
+    # glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
+    # glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
+    # glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, gl.GL_TRUE)
 
     # Create a windowed mode window and its OpenGL context
     window = glfw.create_window(
         int(width), int(height), window_name, None, None
     )
     glfw.make_context_current(window)
+
+    redBits = gl.glGetIntegerv(gl.GL_RED_BITS)
+    greenBits = gl.glGetIntegerv(gl.GL_GREEN_BITS)
+    blueBits = gl.glGetIntegerv(gl.GL_BLUE_BITS)
+    alphaBits = gl.glGetIntegerv(gl.GL_ALPHA_BITS)
+    print('opengl bit depths [RGBA]: ', redBits, greenBits, blueBits, alphaBits)
 
     if not window:
         glfw.terminate()
