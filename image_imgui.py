@@ -49,6 +49,8 @@ def main(width, height, texture_data, texture_id, zoom, dt):
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_NEAREST)
     gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_NEAREST)
 
+    # Make sure the supplied image is converted to float32 and normalized if input data is
+    # in an integer format.
     tex_data_converted = None
     dt_str = str(dt)
     if 'int' in dt_str:
@@ -117,6 +119,7 @@ def impl_glfw_init():
     )
     glfw.make_context_current(window)
 
+    # For debugging, just to check if 10, 10, 10, 2 rendering surface or 8, 8, 8, 8
     redBits = gl.glGetIntegerv(gl.GL_RED_BITS)
     greenBits = gl.glGetIntegerv(gl.GL_GREEN_BITS)
     blueBits = gl.glGetIntegerv(gl.GL_BLUE_BITS)
