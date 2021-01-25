@@ -2,12 +2,12 @@
 # Only 8bit RGB-images work. Data can be both float and uint
 # Only one image can be displayed at a time. Python interpreter paused while Window is open
 # Zoom is fixed by Zoom-slider from 1% to 200%
-# TODO: - multiple images displeyed simultaniously.
+# TODO: - multiple images displayed simultaniously. Multithreading / thread
 #       - mouse zoom and scroll
 #       - 10bit image display
-#       - grayscale Array
+#       - grayscale Array 2D to 3D  [:,:,none]
 #       - reset scale to 100% "pressing button"
-#       - optimize Zoom 1% - 1000% Log_scale 100% midpoint
+#       - optimize Zoom 1% - 1000% Log_scale 100% midpoint, Gamma?
 
 # Dependencies numpy, Imgui[glfw], OpenGL use !pip install
 import numpy as np
