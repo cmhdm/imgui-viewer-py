@@ -1,4 +1,4 @@
-# Image_Imgui displays a numpy array in an external window
+4# Image_Imgui displays a numpy array in an external window
 # Only 8bit RGB-images work. Data can be both float and uint
 # Only one image can be displayed at a time. Python interpreter paused while Window is open
 # Zoom is fixed by Zoom-slider from 1% to 200%
@@ -79,9 +79,15 @@ def main(width, height, texture_data, texture_id, zoom, dt):
 
         # Slider
         imgui.begin("Zoom", True)
+        imgui.set_window_size(250, 150, imgui.FIRST_USE_EVER)
         changed, zoom = imgui.slider_int("slide ints", zoom, min_value=1, max_value=200, format="%d")
         imgui.text("Changed: %s, Values: %s" % (changed, zoom))
+        # reset Zoom
+        z_reset =  imgui.button("Zoom 100%", 80, 40)
         imgui.end()
+
+        if z_reset:
+            zoom = 100
 
         gl.glClearColor(.25, .25, .25, 1)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
