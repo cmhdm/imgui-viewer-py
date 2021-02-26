@@ -34,6 +34,15 @@ def display(bild, zoom = 100):
     # print(dt)
     main(width, height, texture_data, texture_id, zoom, dt)
 
+def zoom_factor(z):
+    z = z/100
+    if z >= 1:
+        return z ** 3.22
+    elif z < 1:
+        return z*0.9 + 0.1
+    else:
+        return 1
+
 # main function that generates the window and image output    
 def main(width, height, texture_data, texture_id, zoom, dt):
     imgui.create_context()
@@ -73,14 +82,15 @@ def main(width, height, texture_data, texture_id, zoom, dt):
         
         # Image
         imgui.begin("Image", True, flags=imgui.WINDOW_HORIZONTAL_SCROLLING_BAR)
-        imgui.image(texture_id, float(width*(zoom/100.0)), float(height*(zoom/100.0)))
+        imgui.image(texture_id, float(width*zoom_factor(zoom)), float(height*zoom_factor(zoom)))
         imgui.end()
 
         # Slider
         imgui.begin("Zoom", True)
         imgui.set_window_size(250, 150, imgui.FIRST_USE_EVER)
-        changed, zoom = imgui.slider_int("slide ints", zoom, min_value=1, max_value=200, format="%d")
-        imgui.text("Changed: %s, Values: %s" % (changed, zoom))
+        changed, zoom = imgui.slider_int("Zoom 10% - 1000%", zoom, min_value=1, max_value=200, 
+                                        format="{}".format(str(int(zoom_factor(zoom)*100)) ) )
+        imgui.text("Changed: %s" % (changed))
         # reset Zoom
         z_reset =  imgui.button("Zoom 100%", 80, 40)
         imgui.end()
