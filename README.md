@@ -12,7 +12,8 @@ https://stackoverflow.com/questions/3165379/how-to-display-a-numpy-array-with-py
 Pyglet is not used for further development -> Pyimgui
 
 ## Pyimgui
-Pyimgui in combination with GLFW and Open GL is used for further development
+Pyimgui in combination with GLFW and Open GL is used. Pyimgui is a python wrapper for imgui (https://pyimgui.readthedocs.io/en/latest/#).
+The main function generates a new window on the desktop with windows inside to display the image.
 
 ## Zoom and Drag
 Zoom implemented with a dragbar is working. -> imgui-v001.py
@@ -20,3 +21,4 @@ Zoom with Scroll and Drag with Click and Drag.
 Max and Min for both Zoom an Drag
 
 ## 10 Bit Data
+Solution by irieger: If Display allows 10bit, 10bit will be displayed. Generates also output at what bitdepth the image is displayed
