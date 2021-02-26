@@ -6,7 +6,6 @@
 #       - mouse zoom and scroll
 #       - 10bit image display
 #       - grayscale Array 2D to 3D  [:,:,none]
-#       - optimize Zoom 1% - 1000% Log_scale 100% midpoint, Gamma?
 
 # Dependencies numpy, Imgui[glfw], OpenGL use !pip install
 import numpy as np
@@ -20,6 +19,10 @@ from imgui.integrations.glfw import GlfwRenderer
 # display functions calls main() and transmits imagedata to Renderer
 # standard zoom is 100 which is a 1:1 display
 # zoom can be changed interactivly and while calling display function
+
+# display can except multiple images args* -> what modifications in main
+# same zoom? easier...
+
 def display(bild, zoom = 100):
     '''
     Display Image via Imgui
@@ -42,6 +45,14 @@ def zoom_factor(z):
         return z*0.9 + 0.1
     else:
         return 1
+
+def check_dim(a):
+    # check if array if not return Error
+    # check what dimension 2D, 3D? All else Error (1D?)
+    # if 3D how many values in 3. Dimension
+    # do: modify arrays
+    # return modified array
+    pass
 
 # main function that generates the window and image output    
 def main(width, height, texture_data, texture_id, zoom, dt):
