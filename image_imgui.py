@@ -4,7 +4,6 @@
 # Zoom is fixed by Zoom-slider from 1% to 200%
 # TODO: - multiple images displayed simultaniously. Multithreading / thread
 #       - mouse zoom and scroll
-#       - 10bit image display
 #       - grayscale Array 2D to 3D  [:,:,none]
 
 # Dependencies numpy, Imgui[glfw], OpenGL use !pip install
@@ -29,6 +28,7 @@ def display(bild, zoom = 100):
     '''
     # multiple pictures?
     # float or int: GL_FLOAT, or  GL_UNSIGNED_BYTE
+    bild = check_dim(bild)
     dt = bild.dtype
     texture_data = bild[:,:,:3]
     width = texture_data.shape[1]
@@ -40,19 +40,28 @@ def display(bild, zoom = 100):
 def zoom_factor(z):
     z = z/100
     if z >= 1:
-        return z ** 3.22
+        return z ** 3.322
     elif z < 1:
         return z*0.9 + 0.1
     else:
         return 1
 
 def check_dim(a):
-    # check if array if not return Error
-    # check what dimension 2D, 3D? All else Error (1D?)
-    # if 3D how many values in 3. Dimension
-    # do: modify arrays
-    # return modified array
-    pass
+    if isinstance(a, np.ndarray):
+        s = a.shape
+        if len(s) == 3:
+            if s[2] == 3:
+                return a
+            elif s[2] == 1:
+                return np.repeat(a, 3, axis=2)
+            else:
+                print('Fehler_3D, Dimension des Input-Arrays inkompatibel')
+        elif len(s) == 2:
+            return np.repeat((np.reshape((a), (s[0],s[1],1))), 3, axis=2)
+        else:
+            print('Fehler_3D_2D, Dimension des Input-Arrays inkompatibel')
+    else:
+        print('Fehler, Input ist kein Array.')
 
 # main function that generates the window and image output    
 def main(width, height, texture_data, texture_id, zoom, dt):
