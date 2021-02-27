@@ -109,19 +109,32 @@ def imguiThreadWorker(queue, window_name = 'PyImageViewer'):
         imgui.new_frame()
         
         # Display all current images
+        del_textures = []
         for image_idx in range(len(textures)):
             zoom = 100
             tex = textures[image_idx]
-            imgui.begin(tex[1], True, flags=imgui.WINDOW_HORIZONTAL_SCROLLING_BAR)
 
-            changed, zoom = imgui.slider_int("Zoom 10% - 1000%", zoom, min_value=1, max_value=200, 
-                                             format="{}".format(str(int(zoom_factor(zoom)*100)) ) )
-            imgui.same_line()
-            if imgui.button("Zoom 100%", 80, 40):
-                zoom = 100
+            _, opened = imgui.begin(tex[1], True, flags=imgui.WINDOW_HORIZONTAL_SCROLLING_BAR)
 
-            imgui.image(tex[0], float(tex[2]*zoom_factor(zoom)), float(tex[3]*zoom_factor(zoom)))
+            if opened:
+                changed, zoom = imgui.slider_int("Zoom 10% - 1000%", zoom, min_value=1, max_value=200, 
+                                                format="{}".format(str(int(zoom_factor(zoom)*100)) ) )
+                imgui.same_line()
+                if imgui.button("Zoom 100%", 80, 40):
+                    zoom = 100
+
+                imgui.image(tex[0], float(tex[2]*zoom_factor(zoom)), float(tex[3]*zoom_factor(zoom)))
+            else:
+                del_textures.append(image_idx)
+
             imgui.end()
+        
+        for image_idx in del_textures:
+            tex = textures[image_idx]
+            gl.glDeleteTextures(1, [tex[0]])
+            textures.pop(image_idx)
+
+
 
         gl.glClearColor(.25, .25, .25, 1)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT)
