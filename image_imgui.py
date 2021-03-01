@@ -4,7 +4,6 @@
 # Zoom is fixed by Zoom-slider from 1% to 200%
 # TODO: - multiple images displayed simultaniously. Multithreading / thread
 #       - mouse zoom and scroll
-#       - grayscale Array 2D to 3D  [:,:,none]
 
 # Dependencies numpy, Imgui[glfw], OpenGL use !pip install
 import numpy as np
@@ -124,7 +123,8 @@ def main(width, height, texture_data, texture_id, zoom, dt):
         imgui.render()
         impl.render(imgui.get_draw_data())
         glfw.swap_buffers(window)
-
+    fenster = glfw.get_window_size(window)
+    print(fenster)
     impl.shutdown()
     glfw.terminate()
 
@@ -139,14 +139,6 @@ def impl_glfw_init():
 
     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
     glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 0)
-
-    # OS X supports only forward-compatible core profiles from 3.2
-    # # Original setup for mac compatibility. Doesn't allow checking bit
-    # # depth on Linux at least thus commented out
-    # glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
-    # glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
-    # glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
-    # glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, gl.GL_TRUE)
 
     # Create a windowed mode window and its OpenGL context
     window = glfw.create_window(
