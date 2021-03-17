@@ -1,16 +1,12 @@
-# Image_Imgui displays a numpy array in an external window
+# multi_image_viewer.py can display multiple numpy-arrays (images) in an external window
 # 8bit and 10bit RGB-images work. Data can be both float and uint
-# Multithread allows for multiple images to be displayed in one window
 # Zoom is fixed by Zoom-slider from 1 to 200 -> zoom_factor-function (10% - 1000%)
 # standard zoom is 100 which is a 1:1 display
-#
-# TODO: - [done] multiple images displayed simultaniously. Multithreading / thread
-#       - [wip] mouse zoom and scroll - basics working, optimizations pending
-#       - [done] save last window size and position
-#       - [done] 10bit image display
-#       - [done] grayscale Array 2D to 3D  [:,:,none]
+# Last window size and position ist saved for next display
+# numpy-arrays can be grayscale Array 2D to 3D
 
 # Dependencies numpy, Imgui[glfw], OpenGL use !pip install
+
 import numpy as np
 
 import glfw
@@ -23,8 +19,11 @@ from sys import platform
 
 from multiprocessing import Process, current_process, Queue
 
-
-# Function to transform int_slider 1-200 range to 10-1000
+# zoom_factor-function transforms the int-slider values
+# slider range (1 - 200), zoom range (10% - 1000%) 
+# returns float values for texture
+# int values divided by 100
+# below 1 linear transform, 1 and above exponetial transform
 def zoom_factor(z):
     z = z / 100.0
     if z >= 1:
@@ -33,10 +32,6 @@ def zoom_factor(z):
         return z * 0.9 + 0.1
     else:
         return 1
-
-# display functions calls main() and transmits imagedata to Renderer
-# zoom can be changed interactivly and while calling display function
-
 
 
 def createImageTexture(image):
@@ -74,85 +69,11 @@ def createImageTexture(image):
     return (texture_id, width, height)
 
 
-last_mouse_pos = None
-
-def zoom_and_drag_image(im_texture_id, im_size, zoom, center_position, min_zoom=1, max_zoom=200):
-    global last_mouse_pos
-
-    ws = imgui.get_window_size()
-    cursor = imgui.get_cursor_pos()
-
-    width = 100
-    if ws.x > 150:
-        width = ws.x - cursor.x - 10 # 10 pixels are the border
-    height = 100
-    if ws.y > 170:
-        height = ws.y - cursor.y - 10
-
-    if imgui.is_window_hovered():
-        # Zoom with mouse_wheel: scroll up -> zoom in, scroll down -> zoom out
-        io = imgui.get_io()
-        if io.mouse_wheel < 0:
-            zoom *= 0.95
-        elif io.mouse_wheel > 0:
-            zoom *= 1.05
-        # Mouse wheel clicked -> Reset to default zoom
-        if imgui.is_mouse_clicked(2):
-            zoom = 100
-
-        if imgui.is_mouse_clicked(1):
-            last_mouse_pos = imgui.get_mouse_pos()
-        elif imgui.is_mouse_dragging(1):
-            calc_zoom = zoom_factor(zoom)
-            mouse_pos = imgui.get_mouse_pos()
-            center_position[0] -= (mouse_pos.x - last_mouse_pos.x) / width / calc_zoom
-            center_position[1] -= (mouse_pos.y - last_mouse_pos.y) / width / calc_zoom
-            last_mouse_pos = mouse_pos
-    
-    im_aspect = im_size[0] / im_size[1]
-    win_aspect = width / height
-
-    if zoom > max_zoom:
-        zoom = max_zoom
-    elif zoom < min_zoom:
-        zoom = min_zoom
-    
-    if center_position[0] < 0:
-        center_position[0] = 0
-    if center_position[1] < 0:
-        center_position[1] = 0
-
-    calc_zoom = zoom_factor(zoom)
-    display_factor = im_size[0] / width * calc_zoom
-
-    uv0 = [0, 0]
-    uv1 = [ 1 / (display_factor),
-            1 / (display_factor * win_aspect / im_aspect)]
-    if uv1[0] > 1:
-        width /= uv1[0] - uv0[0]
-        uv1[0] = 1
-    if uv1[1] > 1:
-        height /= uv1[1] - uv0[1]
-        uv1[1] = 1
-
-    uv0[0] += center_position[0]
-    uv0[1] += center_position[1]
-    uv1[0] += center_position[0]
-    uv1[1] += center_position[1]
-
-    # Todo: Clip mouse drag out of the top/left
-    # This results in outer pixels being duplicated due to OpenGL texture wrap
-    
-    imgui.image(im_texture_id, width, height, tuple(uv0), tuple(uv1))
-    return (int(zoom), center_position)
-
-
 def imguiThreadWorker(queue, window_name = 'PyImageViewer'):
     running = True
 
     # CONSTANTS
     DEFAULT_ZOOM_FACTOR = 100
-    DEFAULT_CENTER_POSITION = [0, 0]
 
     imgui.create_context()
     window = impl_glfw_init(window_name=window_name)
@@ -178,8 +99,7 @@ def imguiThreadWorker(queue, window_name = 'PyImageViewer'):
                     'Image' + str(img_cnt) + ': ' + entry[1],
                     width,
                     height,
-                    DEFAULT_ZOOM_FACTOR,
-                    DEFAULT_CENTER_POSITION])
+                    DEFAULT_ZOOM_FACTOR])
                 img_cnt += 1
         except:
             pass
@@ -194,9 +114,8 @@ def imguiThreadWorker(queue, window_name = 'PyImageViewer'):
             tex = textures[image_idx]
             texture_id = tex[0]
             window_label = tex[1]
-            image_size = (tex[2], tex[3]) # width x height
+            width, height = tex[2], tex[3]
             zoom = tex[4]
-            center_pos = tex[5]
 
             imgui.set_next_window_size(900, 600, condition=imgui.ONCE)
             _, opened = imgui.begin(window_label, True, flags=imgui.WINDOW_HORIZONTAL_SCROLLING_BAR)
@@ -209,16 +128,9 @@ def imguiThreadWorker(queue, window_name = 'PyImageViewer'):
                 imgui.same_line()
                 if imgui.button("Zoom 100%", 70, 20):
                     zoom = 100
-                    center_pos = [0, 0]
-
-                zoom, center_pos = zoom_and_drag_image(
-                        texture_id,
-                        image_size,
-                        zoom,
-                        center_pos
-                )
+                imgui.image(texture_id, float(width*zoom_factor(zoom)), float(height*zoom_factor(zoom)))
                 textures[image_idx][4] = zoom
-                textures[image_idx][5] = center_pos
+
             else:
                 del_textures.append(image_idx)
 
